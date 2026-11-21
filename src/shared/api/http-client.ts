@@ -1,3 +1,4 @@
+import { getAccessToken } from '../auth';
 import { getRuntimeConfig } from '../config/runtime-config';
 
 export interface ApiErrorDetail {
@@ -14,17 +15,12 @@ export interface ApiError {
   errors?: ApiErrorDetail[];
 }
 
-/** Auth is out of scope for issue #4 — seam left for when a real login flow lands. */
-function getAuthToken(): string | null {
-  return null;
-}
-
-function buildHeaders(contentType?: string): Record<string, string> {
+async function buildHeaders(contentType?: string): Promise<Record<string, string>> {
   const headers: Record<string, string> = {};
   if (contentType) {
     headers['Content-Type'] = contentType;
   }
-  const token = getAuthToken();
+  const token = await getAccessToken();
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -58,11 +54,12 @@ async function request<TResponse>(
   const { apiBaseUrl } = getRuntimeConfig();
   const url = `${apiBaseUrl}${path}`;
 
+  const headers = await buildHeaders(init.body !== undefined ? 'application/json' : undefined);
   let response: Response;
   try {
     response = await fetch(url, {
       method: init.method,
-      headers: buildHeaders(init.body !== undefined ? 'application/json' : undefined),
+      headers,
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
     });
   } catch (cause) {

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { accountApi, type AccountStatus, type JobRole } from '../../../entities/account';
 import type { ApiError } from '../../../shared/api';
 import { toUserMessage } from '../../../shared/lib/problem-details';
+import { markOnboarded } from '../model/onboardingStatus';
 
 /** What the app shows next: the account's status, or that onboarding had already happened. */
 export type OnboardingOutcome = AccountStatus | 'ALREADY_ONBOARDED';
@@ -20,10 +21,12 @@ export function useOnboardAccount() {
     setSubmitting(true);
     try {
       const { status } = await accountApi.onboard(jobRole);
+      markOnboarded();
       return status;
     } catch (caught) {
       const apiError = caught as ApiError;
       if (apiError.status === 409) {
+        markOnboarded();
         return 'ALREADY_ONBOARDED';
       }
       setError(

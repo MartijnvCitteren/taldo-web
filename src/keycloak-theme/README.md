@@ -33,6 +33,10 @@ that fills in step by step: name, the company previewed from the e-mail domain
   `FlowLayout`, which the app's onboarding page uses too.
 - `login/signupSteps.ts`: the four sign-up steps and their copy keys. The app's onboarding
   page has the same four in Dutch; change both together.
+- `login/signupName.ts`: Keycloak doesn't give the update-password page the user's name, so
+  the register page keeps it in localStorage (per address, for a day) for the ID badge.
+- `login/legalLinks.ts`: where the two consent boxes on the register page link to (terms,
+  privacy statement). Placeholders for now.
 - `login/i18n.ts`: Dutch (default, informal "je") and English copy, including the Keycloak
   messages the sign-up pages can show. Keycloakify ships these in the JAR, so messages
   Keycloak renders server-side use them too.
@@ -80,6 +84,22 @@ http://localhost:8180/realms/myrealm/protocol/openid-connect/registrations?clien
 ```
 
 Register any address on a non-public mail domain; the verification mail shows up in Mailpit.
+
+### The whole sign-up, with the app and the API
+
+The page above runs Keycloak's dev realm, whose tokens the API doesn't accept. To go through
+all four steps, role included (`POST /onboarding`), use taldo-api's Keycloak on 8080, the one
+the API trusts:
+
+```bash
+npm run build-keycloak-theme
+# in ../taldo-api: Keycloak with the theme mounted; configure-realm.sh makes it the login theme
+docker compose -f docker-compose.yaml -f docker-compose.theme.yaml up -d
+npm run dev   # http://localhost:5173 sends you to Keycloak's login page, "Account aanmaken" is there
+```
+
+The app logs in with `public/config.json` → `auth` (realm `taldo`, client `taldo-web`). After
+sign-up it asks the API whether the account is onboarded and, if not, shows `/onboarding`.
 
 ## Build
 

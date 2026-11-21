@@ -3,7 +3,10 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { accountApi } from '../../../entities/account';
+import { getSessionUser } from '../../../shared/auth';
 import { OnboardingPage } from './OnboardingPage';
+
+vi.mock('../../../shared/auth', () => ({ getSessionUser: vi.fn(() => undefined) }));
 
 vi.mock('../../../entities/account', async () => {
   const actual = await vi.importActual<typeof import('../../../entities/account')>('../../../entities/account');
@@ -12,6 +15,7 @@ vi.mock('../../../entities/account', async () => {
 
 beforeEach(() => {
   vi.mocked(accountApi.onboard).mockReset();
+  vi.mocked(getSessionUser).mockReturnValue(undefined);
 });
 
 function renderPage() {
@@ -43,6 +47,19 @@ describe('OnboardingPage', () => {
     await user.click(screen.getByRole('radio', { name: /Oprichter of directeur/ }));
 
     expect(within(badge).getByText('Oprichter of directeur')).toBeInTheDocument();
+  });
+
+  it('keeps the name and company of the login on the badge', () => {
+    vi.mocked(getSessionUser).mockReturnValue({
+      firstName: 'Sanne',
+      lastName: 'de Vries',
+      email: 'sanne@acme-logistics.nl',
+    });
+    renderPage();
+
+    const badge = screen.getByRole('figure', { name: 'Voorbeeld van je account' });
+    expect(within(badge).getByText('Sanne de Vries')).toBeInTheDocument();
+    expect(within(badge).getByText('Acme-logistics')).toBeInTheDocument();
   });
 
   it('goes into the app once the account is active', async () => {

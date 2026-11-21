@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jobRoleOptions, type JobRole } from '../../../entities/account';
 import { JobRoleForm, PendingApproval, type OnboardingOutcome } from '../../../features/onboard-account';
+import { getSessionUser } from '../../../shared/auth';
+import { companyFromEmail } from '../../../shared/lib/company-from-email';
 import { FlowLayout, IdBadge, ProgressRail } from '../../../shared/ui';
 import styles from './OnboardingPage.module.css';
 
@@ -21,7 +23,7 @@ const APP_HOME = '/vacancies/new';
  * Taldo waits for its owner's approval; that is shown here instead of going into the app.
  *
  * On wide screens the ID badge from the Keycloak pages hangs beside it, now getting its role.
- * The app has no profile data yet (no login), so the badge shows the role and status only.
+ * Name, address and company come from the ID token of the login, as on the Keycloak pages.
  */
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -37,6 +39,8 @@ export function OnboardingPage() {
   };
 
   const roleLabel = jobRoleOptions.find(({ value }) => value === jobRole)?.label;
+  const user = getSessionUser();
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || undefined;
 
   return (
     <FlowLayout
@@ -54,8 +58,11 @@ export function OnboardingPage() {
         <>
           <IdBadge
             label="Voorbeeld van je account"
-            heading="Je Taldo-account"
+            heading={user?.email ?? 'Je Taldo-account'}
+            name={name}
             namePlaceholder="Je naam"
+            organisation={user?.email ? companyFromEmail(user.email) : undefined}
+            organisationPlaceholder="Je bedrijf"
             fields={[{ label: 'Rol', placeholder: 'Kies je rol', value: roleLabel }]}
             status={
               isPending
