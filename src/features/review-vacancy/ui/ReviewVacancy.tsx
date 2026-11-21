@@ -17,7 +17,7 @@ import {
 } from '../../../entities/vacancy-description';
 import type { ApiError } from '../../../shared/api';
 import { toUserMessage } from '../../../shared/lib/problem-details';
-import { Button, Card, CardHeader, ErrorBanner, Skeleton, TextField } from '../../../shared/ui';
+import { Button, Card, CardFooter, CardHeader, ErrorBanner, Skeleton, TextField } from '../../../shared/ui';
 import styles from './ReviewVacancy.module.css';
 
 export type ReviewVacancyGenerationPhase = 'idle' | 'generating' | 'ready' | 'failed';
@@ -291,7 +291,7 @@ export function ReviewVacancy({
           {holidaysLine && <p className={styles.holidaysLine}>{holidaysLine}</p>}
         </div>
 
-        <div className={styles.footer}>
+        <CardFooter>
           <Button
             type="button"
             disabled={saving || stillGenerating || editingSection !== null}
@@ -299,7 +299,7 @@ export function ReviewVacancy({
           >
             Bekijk je vacature
           </Button>
-        </div>
+        </CardFooter>
       </Card>
     </div>
   );

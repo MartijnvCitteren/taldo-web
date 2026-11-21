@@ -72,12 +72,12 @@ export function VacancyCreatePage() {
   return (
     <AppShell>
       {view === 'wizard' && (
-        <>
+        <div className={styles.wizard}>
           <div className={styles.header}>
             <h1>Nieuwe vacature</h1>
             {hasSaved && (
               <span className={styles.savedIndicator}>
-                <CircleCheck size={15} aria-hidden="true" /> Concept opgeslagen om {savedAt}
+                <CircleCheck size={16} aria-hidden="true" /> Concept opgeslagen om {savedAt}
               </span>
             )}
           </div>
@@ -170,7 +170,7 @@ export function VacancyCreatePage() {
               onViewPreview={() => setView('preview')}
             />
           )}
-        </>
+        </div>
       )}
 
       {view === 'preview' && vacancy && (
