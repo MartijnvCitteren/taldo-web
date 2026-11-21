@@ -28,7 +28,7 @@ describe('Logo', () => {
 
     rerender(<Logo variant="lockup" />);
     expect(container.querySelector('[data-part="wordmark"]')).not.toBeNull();
-    expect(container.querySelector('svg')).toHaveAttribute('viewBox', '0 0 388 116');
+    expect(container.querySelector('svg')).toHaveAttribute('viewBox', '0 0 341 116');
   });
 
   it('sizes the icon from the design-system size scale', () => {

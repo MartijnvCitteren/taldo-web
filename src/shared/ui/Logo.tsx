@@ -13,7 +13,7 @@ export interface LogoProps {
   className?: string;
 }
 
-/** The official Taldo icon (`design/taldo-logo/svg/taldo-icon.svg`): a "t" with a dot on a tile. */
+/** The official Taldo icon (`public/branding/taldo-symbol.svg`): a "t" with a dot on a tile. */
 function Icon() {
   return (
     <>
@@ -43,7 +43,7 @@ export function Logo({ variant = 'symbol', size = 28, className }: LogoProps) {
     >
       <svg
         className={isLockup ? styles.lockup : styles.symbol}
-        viewBox={isLockup ? '0 0 388 116' : '0 0 116 116'}
+        viewBox={isLockup ? '0 0 341 116' : '0 0 116 116'}
         aria-hidden="true"
         focusable="false"
       >
