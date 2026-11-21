@@ -1,4 +1,4 @@
-/* Proportions come from the official lockup (388 × 116): the wordmark sits beside the icon. */
+/* Proportions come from the official lockup (341 × 116): the wordmark sits beside the icon. */
 .logo {
   display: inline-flex;
   align-items: center;
@@ -14,7 +14,7 @@
 .lockup {
   display: block;
   height: var(--logo-size);
-  width: calc(var(--logo-size) * 388 / 116);
+  width: calc(var(--logo-size) * 341 / 116);
 }
 
 .tile {

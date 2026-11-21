@@ -89,4 +89,26 @@ describe('loadRuntimeConfig', () => {
     expect(config).toEqual({ apiBaseUrl: 'http://localhost:8080' });
     expect(getRuntimeConfig()).toEqual({ apiBaseUrl: 'http://localhost:8080' });
   });
+
+  it('reads the optional Keycloak client the app logs in with', async () => {
+    const auth = { url: 'http://localhost:8080', realm: 'taldo', clientId: 'taldo-web' };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ apiBaseUrl: 'http://localhost:8090', auth }) }),
+    );
+
+    expect(await loadRuntimeConfig()).toEqual({ apiBaseUrl: 'http://localhost:8090', auth });
+  });
+
+  it('throws RuntimeConfigError when the Keycloak client is incomplete', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ apiBaseUrl: 'http://localhost:8090', auth: { url: 'http://localhost:8080', realm: 'taldo' } }),
+      }),
+    );
+
+    await expect(loadRuntimeConfig()).rejects.toMatchObject({ message: expect.stringContaining('auth.clientId') });
+  });
 });

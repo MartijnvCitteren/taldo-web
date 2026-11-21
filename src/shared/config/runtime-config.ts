@@ -1,5 +1,15 @@
+/** The Keycloak client the app logs in with (authorization code + PKCE, ADR 0006). */
+export interface AuthConfig {
+  /** Keycloak's base URL, without /realms/…. */
+  url: string;
+  realm: string;
+  clientId: string;
+}
+
 export interface RuntimeConfig {
   apiBaseUrl: string;
+  /** Without it the app runs without login, e.g. against a mocked API. */
+  auth?: AuthConfig;
 }
 
 export class RuntimeConfigError extends Error {
@@ -35,7 +45,27 @@ function validate(raw: unknown): RuntimeConfig {
     throw new RuntimeConfigError(`Runtime config "apiBaseUrl" is not a valid URL: ${apiBaseUrl}`);
   }
 
-  return { apiBaseUrl };
+  const auth = validateAuth((raw as Record<string, unknown>).auth);
+  return auth ? { apiBaseUrl, auth } : { apiBaseUrl };
+}
+
+function validateAuth(raw: unknown): AuthConfig | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+  if (typeof raw !== 'object' || raw === null) {
+    throw new RuntimeConfigError('Runtime config "auth" is not an object.');
+  }
+  const { url, realm, clientId } = raw as Record<string, unknown>;
+  for (const [key, value] of Object.entries({ url, realm, clientId })) {
+    if (typeof value !== 'string' || value.trim() === '') {
+      throw new RuntimeConfigError(`Runtime config is missing a non-empty "auth.${key}".`);
+    }
+  }
+  if (!isValidUrl(url as string)) {
+    throw new RuntimeConfigError(`Runtime config "auth.url" is not a valid URL: ${String(url)}`);
+  }
+  return { url: url as string, realm: realm as string, clientId: clientId as string };
 }
 
 /**

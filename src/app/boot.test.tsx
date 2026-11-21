@@ -40,4 +40,34 @@ describe('bootApp', () => {
     await waitFor(() => expect(container.querySelector('[role="alert"]')).toBeTruthy());
     expect(container.textContent).not.toContain('Basisgegevens');
   });
+
+  it('logs in before rendering when the config names a Keycloak client', async () => {
+    const auth = { url: 'http://localhost:8080', realm: 'taldo', clientId: 'taldo-web' };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { apiBaseUrl: 'http://localhost:8090', auth })));
+    const startSession = vi.fn().mockResolvedValue(undefined);
+    vi.doMock('../shared/auth', () => ({ startSession, getAccessToken: async () => null }));
+    const { bootApp } = await import('./boot');
+
+    await act(async () => { await bootApp(container); });
+
+    expect(startSession).toHaveBeenCalledWith(auth);
+    await waitFor(() => expect(container.textContent).toContain('Basisgegevens'));
+    vi.doUnmock('../shared/auth');
+  });
+
+  it('says so when logging in fails, instead of rendering the app', async () => {
+    const auth = { url: 'http://localhost:8080', realm: 'taldo', clientId: 'taldo-web' };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { apiBaseUrl: 'http://localhost:8090', auth })));
+    vi.doMock('../shared/auth', () => ({
+      startSession: vi.fn().mockRejectedValue(new Error('Keycloak is niet bereikbaar')),
+      getAccessToken: async () => null,
+    }));
+    const { bootApp } = await import('./boot');
+
+    await act(async () => { await bootApp(container); });
+
+    await waitFor(() => expect(container.querySelector('[role="alert"]')).toHaveTextContent('Inloggen lukt nu niet'));
+    expect(container.textContent).not.toContain('Basisgegevens');
+    vi.doUnmock('../shared/auth');
+  });
 });

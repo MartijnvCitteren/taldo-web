@@ -29,13 +29,16 @@ is "Taldo" and the logo files are `taldo-*.svg`.
   official files, used for the favicon only. The old reconstructed Jobzy mark (square hub
   with a signal badge) is gone; `reference/components/Logo.md` still describes it.
 - **Icons:** `lucide-react`.
+- **Fonts:** Inter and JetBrains Mono are bundled from `@fontsource-variable/*` (imported at the
+  top of `tokens.css`), never loaded from a font CDN — the Keycloak theme ships them in its JAR.
 - **Enforcement:** `npm run lint:css` (Stylelint, `stylelint.config.js`, part of `npm run lint`)
   rejects color literals, unit literals for spacing/radius/type/motion, literal font weights,
   families and line-heights, and breakpoints other than 639/640 and 1023/1024px in CSS modules.
 - **Repo extensions** (in `tokens.css`, not yet in the DS artifact): `--surface-input` (white
   field background) and `--border-input` (field hairline), `--text-h2-*` (19px),
   `--text-h3-*` (15px), `--text-title-*` (22px), `--font-weight-*`, `--tracking-*`,
-  `--line-snug`, `--radius-checkbox`, `--scrim`, `--duration-loading`, `--logo-*`. Propose
+  `--line-snug`, `--radius-checkbox`, `--scrim`, `--duration-loading`, `--logo-*`,
+  `--form-max` (440px single-column form width, used by the Keycloak theme). Propose
   them to the DS before relying on them more widely.
 
 ## Hard rules

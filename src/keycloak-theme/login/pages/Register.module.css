@@ -1,0 +1,18 @@
+/* First and last name: stacked on phones, side by side from 640px. */
+.names {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .names {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+}
+
+.consent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
