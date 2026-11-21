@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getAccessToken } from '../auth';
 import { httpClient, type ApiError } from './http-client';
+
+vi.mock('../auth', () => ({ getAccessToken: vi.fn(async () => null) }));
 
 function jsonResponse(status: number, body: unknown, contentType = 'application/json') {
   return {
@@ -34,6 +37,25 @@ describe('httpClient', () => {
     expect(url).toBe('http://localhost:8080/vacancy/1');
   });
 
+  it('sends the access token of the login as a bearer token', async () => {
+    vi.mocked(getAccessToken).mockResolvedValueOnce('access-token');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(200, {})));
+
+    await httpClient.get('/vacancy/1');
+
+    const [, init] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(init.headers).toMatchObject({ Authorization: 'Bearer access-token' });
+  });
+
+  it('sends no Authorization header when the app runs without login', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(200, {})));
+
+    await httpClient.get('/vacancy/1');
+
+    const [, init] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+
   it('sends a JSON body on POST', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(201, { id: '1' })));
 
@@ -45,7 +67,17 @@ describe('httpClient', () => {
     expect(init.headers['Content-Type']).toBe('application/json');
   });
 
-  it.each([400, 401, 403, 404, 409, 500])(
+  it('sends a plain JSON body on PATCH, which is the only type the API accepts', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(200, { id: '1' })));
+
+    await httpClient.patch('/vacancy/1', { jobTitle: 'Dev' });
+
+    const [, init] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(init.method).toBe('PATCH');
+    expect(init.headers['Content-Type']).toBe('application/json');
+  });
+
+  it.each([400, 401, 403, 404, 409, 422, 500, 501, 503])(
     'parses a %d application/problem+json response into an ApiError',
     async (status) => {
       const problem = { title: 'Something went wrong', status, detail: 'Details here' };

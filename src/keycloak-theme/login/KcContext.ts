@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { ExtendKcContext } from "keycloakify/login";
 import type { KcEnvName, ThemeName } from "../kc.gen";
 
@@ -9,6 +8,10 @@ export type KcContextExtension = {
     // See: https://docs.keycloakify.dev/faq-and-help/some-values-you-need-are-missing-from-in-kccontext
 };
 
-export type KcContextExtensionPerPage = {};
+export type KcContextExtensionPerPage = {
+    // Keycloak sets the account's username here (the address, with e-mail as username). After the
+    // link in the verification mail, auth.attemptedUsername is empty on this page.
+    "login-update-password.ftl": { username?: string };
+};
 
 export type KcContext = ExtendKcContext<KcContextExtension, KcContextExtensionPerPage>;
