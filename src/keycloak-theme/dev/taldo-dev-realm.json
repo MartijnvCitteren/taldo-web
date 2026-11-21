@@ -2192,7 +2192,7 @@
         {
           "authenticator": "registration-terms-and-conditions",
           "authenticatorFlow": false,
-          "requirement": "DISABLED",
+          "requirement": "REQUIRED",
           "priority": 70,
           "autheticatorFlow": false,
           "userSetupAllowed": false
@@ -2291,7 +2291,7 @@
       "name": "Terms and Conditions",
       "providerId": "TERMS_AND_CONDITIONS",
       "enabled": true,
-      "defaultAction": true,
+      "defaultAction": false,
       "priority": 20,
       "config": {}
     },

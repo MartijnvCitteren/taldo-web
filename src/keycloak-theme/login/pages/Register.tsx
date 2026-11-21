@@ -10,6 +10,8 @@ import type { KcContext } from '../KcContext';
 import type { I18n } from '../i18n';
 import Template from '../Template';
 import { SignupPanel } from '../SignupPanel';
+import { PRIVACY_STATEMENT_URL, TERMS_URL } from '../legalLinks';
+import { rememberSignupName } from '../signupName';
 import { extractJavaPatterns } from './register/javaPatterns';
 import page from './page.module.css';
 import styles from './Register.module.css';
@@ -99,6 +101,9 @@ export default function Register({ kcContext, i18n, doUseDefaultCss, classes }: 
   const hasTermsError = messagesPerField.existsError('termsAccepted');
 
   const [areTermsAccepted, setAreTermsAccepted] = useState(false);
+  const [isPrivacyRead, setIsPrivacyRead] = useState(false);
+  // The two consent boxes show "required" only after a submit, like a field that was never touched.
+  const [isConsentChecked, setIsConsentChecked] = useState(false);
   const [isCheckPending, setIsCheckPending] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -134,17 +139,23 @@ export default function Register({ kcContext, i18n, doUseDefaultCss, classes }: 
     const firstInvalid = visibleFields.find((state) => errorsOf(state).length > 0);
     if (firstInvalid) {
       document.getElementById(firstInvalid.attribute.name)?.focus();
+    } else if (!areTermsAccepted || !isPrivacyRead) {
+      document.querySelector<HTMLInputElement>(`#kc-register-form [data-consent="${!areTermsAccepted ? 'terms' : 'privacy'}"] input`)?.focus();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts to the form state after a check
   }, [isCheckPending, formFieldStates, patternCheckedFields]);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    if (!isFormSubmittable || hasPatternFailure || (termsAcceptanceRequired && !areTermsAccepted)) {
+    setIsConsentChecked(true);
+    if (!isFormSubmittable || hasPatternFailure || !areTermsAccepted || !isPrivacyRead) {
       event.preventDefault();
       formFieldStates.forEach(({ attribute }) => loseFocus(attribute.name));
       setIsCheckPending(true);
+      return;
     }
-    // Otherwise the browser posts the form to Keycloak.
+    // The later sign-up steps don't get the name from Keycloak; keep it for their ID badge.
+    rememberSignupName(valueOf('email'), `${valueOf('firstName').trim()} ${valueOf('lastName').trim()}`);
+    // The browser posts the form to Keycloak.
   };
 
   const useInvisibleRecaptcha = recaptchaRequired && !recaptchaVisible && recaptchaAction !== undefined;
@@ -218,18 +229,32 @@ export default function Register({ kcContext, i18n, doUseDefaultCss, classes }: 
         {nameFields.length > 0 && <div className={styles.names}>{nameFields.map(renderField)}</div>}
         {otherFields.map(renderField)}
 
-        {termsAcceptanceRequired && (
-          <div className={styles.terms}>
-            <div className={styles.termsText}>{msg('termsText')}</div>
+        <div className={styles.consent}>
+          <div data-consent="terms">
             <Checkbox
-              name="termsAccepted"
-              label={msgStr('acceptTerms')}
+              // Keycloak checks and records it when the realm turns on terms at registration.
+              name={termsAcceptanceRequired ? 'termsAccepted' : undefined}
+              label={withLink(msgStr('registerTermsLabel'), TERMS_URL, msgStr('registerTermsLink'))}
               checked={areTermsAccepted}
               onChange={setAreTermsAccepted}
-              error={hasTermsError ? advancedMsgStr(messagesPerField.get('termsAccepted')) : undefined}
+              error={
+                isConsentChecked && !areTermsAccepted
+                  ? msgStr('registerConsentRequired')
+                  : hasTermsError
+                    ? advancedMsgStr(messagesPerField.get('termsAccepted'))
+                    : undefined
+              }
             />
           </div>
-        )}
+          <div data-consent="privacy">
+            <Checkbox
+              label={withLink(msgStr('registerPrivacyLabel'), PRIVACY_STATEMENT_URL, msgStr('registerPrivacyLink'))}
+              checked={isPrivacyRead}
+              onChange={setIsPrivacyRead}
+              error={isConsentChecked && !isPrivacyRead ? msgStr('registerConsentRequired') : undefined}
+            />
+          </div>
+        </div>
         {useVisibleRecaptcha && (
           <div className="g-recaptcha" data-size="compact" data-sitekey={recaptchaSiteKey} data-action={recaptchaAction} />
         )}
@@ -247,6 +272,20 @@ export default function Register({ kcContext, i18n, doUseDefaultCss, classes }: 
         </Button>
       </form>
     </Template>
+  );
+}
+
+/** A label like "I agree to the {0}" with {0} as a link, opened in a new tab to keep the form. */
+function withLink(template: string, href: string, linkText: string) {
+  const [before, after = ''] = template.split('{0}');
+  return (
+    <span>
+      {before}
+      <a href={href} target="_blank" rel="noreferrer" className={page.link}>
+        {linkText}
+      </a>
+      {after}
+    </span>
   );
 }
 
