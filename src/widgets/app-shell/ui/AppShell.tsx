@@ -9,6 +9,9 @@ import {
   Settings,
   LifeBuoy,
 } from 'lucide-react';
+import { getSessionUser } from '../../../shared/auth';
+import { companyFromEmail } from '../../../shared/lib/company-from-email';
+import { toInitials } from '../../../shared/lib/initials';
 import { Logo } from '../../../shared/ui';
 import styles from './AppShell.module.css';
 
@@ -38,6 +41,11 @@ export interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // The logged-in user, from the ID token; without login (mocked API) a neutral account chip.
+  const user = getSessionUser();
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || undefined;
+  const initials = toInitials(name);
+  const company = user?.email ? companyFromEmail(user.email) : undefined;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -81,14 +89,15 @@ export function AppShell({ children }: AppShellProps) {
               onClick={() => setMenuOpen((open) => !open)}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
+              aria-label={initials ? undefined : 'Je account'}
             >
-              <span className={styles.avatar}>MJ</span>
+              <span className={styles.avatar}>{initials ?? <UserRound size={16} aria-hidden="true" />}</span>
             </button>
             {menuOpen && (
               <ul className={styles.accountMenu} role="menu" aria-label="Accountmenu">
                 <li className={styles.accountMenuHeader}>
-                  <div className={styles.accountMenuName}>Merel Janssen</div>
-                  <div className={styles.accountMenuOrg}>Taldo</div>
+                  <div className={styles.accountMenuName}>{name ?? 'Je account'}</div>
+                  {company && <div className={styles.accountMenuOrg}>{company}</div>}
                 </li>
                 {accountMenuItems.map(({ label, Icon }) => (
                   <li key={label} role="none">

@@ -45,7 +45,7 @@ describe('bootApp', () => {
     const auth = { url: 'http://localhost:8080', realm: 'taldo', clientId: 'taldo-web' };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, { apiBaseUrl: 'http://localhost:8090', auth })));
     const startSession = vi.fn().mockResolvedValue(undefined);
-    vi.doMock('../shared/auth', () => ({ startSession, getAccessToken: async () => null }));
+    vi.doMock('../shared/auth', () => ({ startSession, getAccessToken: async () => null, getSessionUser: () => undefined }));
     const { bootApp } = await import('./boot');
 
     await act(async () => { await bootApp(container); });
@@ -61,6 +61,7 @@ describe('bootApp', () => {
     vi.doMock('../shared/auth', () => ({
       startSession: vi.fn().mockRejectedValue(new Error('Keycloak is niet bereikbaar')),
       getAccessToken: async () => null,
+      getSessionUser: () => undefined,
     }));
     const { bootApp } = await import('./boot');
 
