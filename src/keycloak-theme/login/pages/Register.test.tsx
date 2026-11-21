@@ -57,6 +57,14 @@ async function fillIn(user: ReturnType<typeof userEvent.setup>, email = 'sanne@b
   await user.type(screen.getByLabelText('Werkmailadres'), email);
 }
 
+const termsBox = () => screen.getByRole('checkbox', { name: 'Ik ga akkoord met de algemene voorwaarden' });
+const privacyBox = () => screen.getByRole('checkbox', { name: 'Ik heb de privacyverklaring gelezen' });
+
+async function consent(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(termsBox());
+  await user.click(privacyBox());
+}
+
 describe('Register', () => {
   it('asks for name and work email on one screen, in Dutch by default, without a password', async () => {
     renderRegister();
@@ -127,6 +135,7 @@ describe('Register', () => {
   it('accepts real names (the realm pattern uses Java-only \\p{L}) and posts the form to Keycloak', async () => {
     const { user, kcContext } = renderRegister();
     await fillIn(user);
+    await consent(user);
     const form = document.getElementById('kc-register-form') as HTMLFormElement;
     const posted = recordPosts();
 
@@ -156,18 +165,63 @@ describe('Register', () => {
     expect(screen.getByLabelText('Herhaal je wachtwoord')).toHaveFocus();
   });
 
-  it('asks to accept the terms when the realm requires it, and only then submits', async () => {
-    const { user } = renderRegister({ termsAcceptanceRequired: true });
+  it('asks to agree to the terms and to have read the privacy statement, and only then submits', async () => {
+    const { user } = renderRegister();
     await fillIn(user);
     const form = document.getElementById('kc-register-form') as HTMLFormElement;
     const posted = recordPosts();
 
     await user.click(submit());
-    await user.click(screen.getByRole('checkbox'));
+    expect(termsBox()).toHaveAccessibleDescription('Vink dit aan om je account aan te maken.');
+    expect(privacyBox()).toHaveAccessibleDescription('Vink dit aan om je account aan te maken.');
+    expect(termsBox()).toHaveFocus();
+
+    await user.click(termsBox());
+    await user.click(submit());
+    expect(privacyBox()).toHaveFocus();
+
+    await user.click(privacyBox());
     await user.click(submit());
 
-    expect(posted).toEqual([false, true]);
+    expect(posted).toEqual([false, false, true]);
+    // Without terms at registration in the realm, Keycloak gets no termsAccepted it doesn't expect.
+    expect(new FormData(form).has('termsAccepted')).toBe(false);
+  });
+
+  it('links both boxes to their documents, in a new tab so the form stays filled in', async () => {
+    renderRegister();
+
+    for (const name of ['algemene voorwaarden', 'privacyverklaring']) {
+      expect(await screen.findByRole('link', { name })).toHaveAttribute('target', '_blank');
+    }
+  });
+
+  it('posts the terms acceptance to Keycloak when the realm records it', async () => {
+    const { user } = renderRegister({ termsAcceptanceRequired: true });
+    await fillIn(user);
+    await consent(user);
+    const form = document.getElementById('kc-register-form') as HTMLFormElement;
+    const posted = recordPosts();
+
+    await user.click(submit());
+
+    expect(posted).toEqual([true]);
     expect(new FormData(form).get('termsAccepted')).toBe('on');
+  });
+
+  it('remembers the name for the badge on the later sign-up steps', async () => {
+    localStorage.clear();
+    const { user } = renderRegister();
+    await fillIn(user);
+    await consent(user);
+    recordPosts();
+
+    await user.click(submit());
+
+    expect(JSON.parse(localStorage.getItem('taldo.signup-name') ?? '{}')).toMatchObject({
+      email: 'sanne@bedrijf.nl',
+      name: "Zoë 't Hooft",
+    });
   });
 
   it('focuses the email field when Keycloak reports the address already exists', async () => {

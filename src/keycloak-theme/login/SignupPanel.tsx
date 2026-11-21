@@ -1,6 +1,7 @@
 import { companyFromEmail } from '../../shared/lib/company-from-email';
 import { IdBadge } from '../../shared/ui';
 import type { I18n } from './i18n';
+import { recallSignupName } from './signupName';
 import type { SignupStep } from './signupSteps';
 import styles from './SignupPanel.module.css';
 
@@ -26,6 +27,8 @@ const CAPTIONS = {
  */
 export function SignupPanel({ step, i18n, name, email, isWorkEmail = true }: SignupPanelProps) {
   const { msgStr } = i18n;
+  // Later steps don't get the name from Keycloak; show the one typed on the register page.
+  const shownName = name || (step === 'details' ? undefined : recallSignupName(email));
   const status =
     step === 'verify'
       ? ({ tone: 'attention', label: msgStr('signupBadgeMailSent') } as const)
@@ -37,7 +40,7 @@ export function SignupPanel({ step, i18n, name, email, isWorkEmail = true }: Sig
     <>
       <IdBadge
         label={msgStr('signupBadgeLabel')}
-        name={name}
+        name={shownName}
         namePlaceholder={msgStr('signupBadgeNamePlaceholder')}
         // After step 1 Keycloak only tells these pages the address: it heads the badge then.
         heading={step === 'details' ? undefined : email}

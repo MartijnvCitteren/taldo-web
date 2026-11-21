@@ -5,6 +5,7 @@ import type { DeepPartial } from 'keycloakify/tools/DeepPartial';
 import type { KcContext } from '../KcContext';
 import { getKcContextMock } from '../KcPageStory';
 import KcPage from '../KcPage';
+import { rememberSignupName } from '../signupName';
 
 vi.mock('keycloakify/login/Template.useInitialize', () => ({ useInitialize: () => ({ isReadyToRender: true }) }));
 
@@ -87,6 +88,37 @@ describe('login-update-password.ftl', () => {
     expect(currentStep()).toHaveTextContent('Wachtwoord kiezen');
     expect(screen.getByLabelText('Wachtwoord')).toHaveAttribute('autocomplete', 'new-password');
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('keeps the name typed on the register page on the account badge', async () => {
+    rememberSignupName('sanne@bedrijf.nl', 'Sanne de Vries');
+    renderPage('login-update-password.ftl');
+
+    const badge = await screen.findByRole('figure', { name: 'Voorbeeld van je account' });
+    expect(within(badge).getByText('Sanne de Vries')).toBeInTheDocument();
+    localStorage.clear();
+  });
+
+  it('finds the address in Keycloak\'s username after the link in the mail, where the login attempt is empty', async () => {
+    rememberSignupName('sanne@bedrijf.nl', 'Sanne de Vries');
+    renderPage('login-update-password.ftl', {
+      username: 'sanne@bedrijf.nl',
+      auth: { attemptedUsername: undefined },
+    });
+
+    const badge = await screen.findByRole('figure', { name: 'Voorbeeld van je account' });
+    expect(within(badge).getByText('Sanne de Vries')).toBeInTheDocument();
+    expect(within(badge).getByText('Bedrijf')).toBeInTheDocument();
+    localStorage.clear();
+  });
+
+  it("shows no name for another account's address", async () => {
+    rememberSignupName('iemand@anders.nl', 'Iemand Anders');
+    renderPage('login-update-password.ftl');
+
+    const badge = await screen.findByRole('figure', { name: 'Voorbeeld van je account' });
+    expect(within(badge).queryByText('Iemand Anders')).not.toBeInTheDocument();
+    localStorage.clear();
   });
 
   it('catches an empty password and two passwords that differ before posting', async () => {

@@ -32,7 +32,7 @@ export default function LoginVerifyEmail({ kcContext, i18n, doUseDefaultCss, cla
       // confirmation or an error is still worth showing.
       displayMessage={message?.type !== 'warning'}
       signupStep="verify"
-      aside={<SignupPanel step="verify" i18n={i18n} email={user?.email} />}
+      aside={<SignupPanel step="verify" i18n={i18n} name={fullName(user)} email={user?.email} />}
     >
       <div className={page.intro}>
         <span className={styles.icon} aria-hidden="true">
@@ -56,4 +56,10 @@ export default function LoginVerifyEmail({ kcContext, i18n, doUseDefaultCss, cla
       </div>
     </Template>
   );
+}
+
+/** Keycloak's typing only promises the address; the name is used when the page gets it too. */
+function fullName(user: { email: string } | undefined): string | undefined {
+  const { firstName, lastName } = (user ?? {}) as { firstName?: string; lastName?: string };
+  return [firstName, lastName].filter(Boolean).join(' ') || undefined;
 }

@@ -10,7 +10,9 @@ const kcContextExtension: KcContextExtension = {
     ...kcEnvDefaults,
   },
 };
-const kcContextExtensionPerPage: KcContextExtensionPerPage = {};
+const kcContextExtensionPerPage: KcContextExtensionPerPage = {
+  'login-update-password.ftl': {},
+};
 
 // Mirrors the taldo realm (taldo-api/docker/keycloak/taldo-realm.json) so stories behave like
 // the real pages: e-mail is the username, Dutch is the default language, same User Profile rules.

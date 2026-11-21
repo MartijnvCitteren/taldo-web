@@ -26,6 +26,8 @@ export default function LoginUpdatePassword({
 }: LoginUpdatePasswordProps) {
   const { url, realm, messagesPerField, isAppInitiatedAction, auth } = kcContext;
   const { msg, msgStr } = i18n;
+  // The address: Keycloak's `username` (e-mail is the username), else the login attempt's.
+  const username = kcContext.username || auth?.attemptedUsername;
 
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -67,7 +69,7 @@ export default function LoginUpdatePassword({
       signupStep={isAppInitiatedAction ? undefined : 'password'}
       aside={
         isAppInitiatedAction ? undefined : (
-          <SignupPanel step="password" i18n={i18n} email={auth?.attemptedUsername} />
+          <SignupPanel step="password" i18n={i18n} email={username} />
         )
       }
     >
@@ -78,9 +80,7 @@ export default function LoginUpdatePassword({
 
       <form id="kc-passwd-update-form" className={page.form} action={url.loginAction} method="post" noValidate onSubmit={onSubmit}>
         {/* Lets password managers save the new password under the right account. */}
-        {auth?.attemptedUsername && (
-          <input type="text" name="username" value={auth.attemptedUsername} autoComplete="username" readOnly hidden />
-        )}
+        {username && <input type="text" name="username" value={username} autoComplete="username" readOnly hidden />}
         <PasswordField
           id="password-new"
           name="password-new"
