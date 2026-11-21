@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getAccessToken } from '../auth';
 import { httpClient, type ApiError } from './http-client';
+
+vi.mock('../auth', () => ({ getAccessToken: vi.fn(async () => null) }));
 
 function jsonResponse(status: number, body: unknown, contentType = 'application/json') {
   return {
@@ -32,6 +35,25 @@ describe('httpClient', () => {
     expect(result).toEqual({ id: '1' });
     const [url] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toBe('http://localhost:8080/vacancy/1');
+  });
+
+  it('sends the access token of the login as a bearer token', async () => {
+    vi.mocked(getAccessToken).mockResolvedValueOnce('access-token');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(200, {})));
+
+    await httpClient.get('/vacancy/1');
+
+    const [, init] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(init.headers).toMatchObject({ Authorization: 'Bearer access-token' });
+  });
+
+  it('sends no Authorization header when the app runs without login', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse(200, {})));
+
+    await httpClient.get('/vacancy/1');
+
+    const [, init] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
   });
 
   it('sends a JSON body on POST', async () => {

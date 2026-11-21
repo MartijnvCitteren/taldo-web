@@ -6,6 +6,7 @@
 
 .label {
   font-size: var(--text-ui-size);
+  line-height: var(--line-snug);
   color: var(--text-secondary);
 }
 
@@ -106,8 +107,43 @@ select.controlWithSuffix {
   pointer-events: none;
 }
 
+/* A control inside the field's right edge (e.g. PasswordField's reveal toggle). */
+.trailingWrapper {
+  position: relative;
+}
+
+.controlWithTrailing {
+  padding-right: calc(var(--space-5) + var(--space-1));
+}
+
+.trailing {
+  position: absolute;
+  top: 50%;
+  right: var(--space-1);
+  transform: translateY(-50%);
+  display: flex;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-hover);
+}
+
+.toggle:hover {
+  color: var(--text-primary);
+}
+
 .error {
   margin: 0;
   color: var(--text-error);
   font-size: var(--text-caption-size);
+  line-height: var(--line-snug);
 }

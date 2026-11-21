@@ -1,8 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { getSessionUser } from '../../../shared/auth';
 import { AppShell } from './AppShell';
+
+vi.mock('../../../shared/auth', () => ({ getSessionUser: vi.fn() }));
+
+beforeEach(() => {
+  vi.mocked(getSessionUser).mockReturnValue({
+    firstName: 'Merel',
+    lastName: 'Janssen',
+    email: 'merel@acme-logistics.nl',
+  });
+});
 
 function renderShell() {
   render(
@@ -30,6 +41,13 @@ describe('AppShell', () => {
     expect(screen.getByText('MJ')).toBeInTheDocument();
   });
 
+  it('shows a neutral account chip when the app runs without login', () => {
+    vi.mocked(getSessionUser).mockReturnValue(undefined);
+    renderShell();
+
+    expect(screen.getByRole('button', { name: 'Je account' })).toBeInTheDocument();
+  });
+
   it('renders the passed children content', () => {
     renderShell();
 
@@ -51,7 +69,7 @@ describe('AppShell', () => {
     const menu = screen.getByRole('menu', { name: 'Accountmenu' });
     expect(menu).toBeInTheDocument();
     expect(screen.getByText('Merel Janssen')).toBeInTheDocument();
-    expect(within(menu).getByText('Taldo')).toBeInTheDocument();
+    expect(within(menu).getByText('Acme-logistics')).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Account' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Instellingen' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Support' })).toBeInTheDocument();
