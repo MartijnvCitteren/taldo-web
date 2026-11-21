@@ -65,7 +65,12 @@ export default function LoginUpdatePassword({
       classes={classes}
       documentTitle={`${msgStr('updatePasswordTitle')} · ${realm.displayName || 'Taldo'}`}
       headerNode={msg('updatePasswordTitle')}
-      displayMessage={!messagesPerField.existsError('password', 'password-confirm')}
+      // Field errors show on the fields. In sign-up, Keycloak's warning ("you need to change your
+      // password to activate your account") only repeats the heading, in formal Dutch.
+      displayMessage={
+        !messagesPerField.existsError('password', 'password-confirm') &&
+        (isAppInitiatedAction || kcContext.message?.type !== 'warning')
+      }
       signupStep={isAppInitiatedAction ? undefined : 'password'}
       aside={
         isAppInitiatedAction ? undefined : (

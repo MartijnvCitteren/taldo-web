@@ -90,6 +90,23 @@ describe('login-update-password.ftl', () => {
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 
+  it("leaves out Keycloak's 'change your password to activate' warning in sign-up", async () => {
+    renderPage('login-update-password.ftl', {
+      message: { type: 'warning', summary: 'U moet uw wachtwoord wijzigen om uw account te activeren.' },
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Kies een wachtwoord' })).toBeInTheDocument();
+    expect(screen.queryByText('U moet uw wachtwoord wijzigen om uw account te activeren.')).not.toBeInTheDocument();
+  });
+
+  it('still shows an error from Keycloak', async () => {
+    renderPage('login-update-password.ftl', {
+      message: { type: 'error', summary: 'Er ging iets mis. Probeer het opnieuw.' },
+    });
+
+    expect(await screen.findByText('Er ging iets mis. Probeer het opnieuw.')).toBeInTheDocument();
+  });
+
   it('keeps the name typed on the register page on the account badge', async () => {
     rememberSignupName('sanne@bedrijf.nl', 'Sanne de Vries');
     renderPage('login-update-password.ftl');

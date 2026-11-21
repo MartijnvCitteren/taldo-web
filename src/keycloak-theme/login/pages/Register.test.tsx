@@ -196,7 +196,7 @@ describe('Register', () => {
     }
   });
 
-  it('posts the terms acceptance to Keycloak when the realm records it', async () => {
+  it('posts the terms acceptance to Keycloak when the realm checks it', async () => {
     const { user } = renderRegister({ termsAcceptanceRequired: true });
     await fillIn(user);
     await consent(user);

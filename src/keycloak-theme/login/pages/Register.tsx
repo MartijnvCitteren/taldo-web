@@ -232,7 +232,8 @@ export default function Register({ kcContext, i18n, doUseDefaultCss, classes }: 
         <div className={styles.consent}>
           <div data-consent="terms">
             <Checkbox
-              // Keycloak checks and records it when the realm turns on terms at registration.
+              // With terms at registration on in the realm, Keycloak refuses the form without it. It
+              // doesn't store the acceptance (Keycloak 26.8: the form action's success() is empty).
               name={termsAcceptanceRequired ? 'termsAccepted' : undefined}
               label={withLink(msgStr('registerTermsLabel'), TERMS_URL, msgStr('registerTermsLink'))}
               checked={areTermsAccepted}
