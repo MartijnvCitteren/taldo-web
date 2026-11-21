@@ -15,7 +15,7 @@ import {
 } from '../../../entities/vacancy';
 import type { ApiError } from '../../../shared/api';
 import { toFieldErrors, toUserMessage } from '../../../shared/lib/problem-details';
-import { Button, Card, Checkbox, ErrorBanner, NumberField, Select, TextField } from '../../../shared/ui';
+import { Button, Card, CardFooter, Checkbox, ErrorBanner, NumberField, Select, TextField } from '../../../shared/ui';
 import styles from './VacancyContactOfferForm.module.css';
 
 /**
@@ -328,9 +328,11 @@ export function VacancyContactOfferForm({
           />
         </div>
 
-        <Button type="button" disabled={saving} onClick={save}>
-          Volgende
-        </Button>
+        <CardFooter>
+          <Button type="button" disabled={saving} onClick={save}>
+            Volgende
+          </Button>
+        </CardFooter>
       </Card>
     </>
   );

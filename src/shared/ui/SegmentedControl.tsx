@@ -1,3 +1,5 @@
+import { useId } from 'react';
+import fieldStyles from './fields.module.css';
 import styles from './SegmentedControl.module.css';
 
 export interface SegmentedControlOption<T extends string> {
@@ -9,6 +11,7 @@ export interface SegmentedControlProps<T extends string> {
   options: SegmentedControlOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  /** Shown above the options, like a field label. */
   label?: string;
 }
 
@@ -18,19 +21,27 @@ export function SegmentedControl<T extends string>({
   onChange,
   label,
 }: SegmentedControlProps<T>) {
+  const labelId = useId();
   return (
-    <div className={styles.group} role="group" aria-label={label}>
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          className={styles.option}
-          aria-pressed={option.value === value}
-          onClick={() => onChange(option.value)}
-        >
-          {option.label}
-        </button>
-      ))}
+    <div className={fieldStyles.field}>
+      {label && (
+        <span id={labelId} className={fieldStyles.label}>
+          {label}
+        </span>
+      )}
+      <div className={styles.group} role="group" aria-labelledby={label ? labelId : undefined}>
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={styles.option}
+            aria-pressed={option.value === value}
+            onClick={() => onChange(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

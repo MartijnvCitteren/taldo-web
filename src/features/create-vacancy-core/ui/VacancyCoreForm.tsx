@@ -16,6 +16,7 @@ import type { ApiError } from '../../../shared/api';
 import {
   Button,
   Card,
+  CardFooter,
   CardHeader,
   ErrorBanner,
   NumberField,
@@ -165,21 +166,23 @@ export function VacancyCoreForm({ vacancyId, initialValues, onSaved, onNext }: V
         error={fieldErrors.jobTitle}
         maxLength={100}
       />
-      <Select
-        label="Taal van de vacature"
-        value={values.language}
-        onChange={(value) => setField('language', value as Language)}
-        options={languageOptions}
-        error={fieldErrors.language}
-      />
-      <Select
-        label="Categorie"
-        value={values.category}
-        onChange={(value) => setField('category', value as VacancyCategory)}
-        options={categoryOptions}
-        placeholder="Kies een categorie"
-        error={fieldErrors.category}
-      />
+      <div className={styles.grid}>
+        <Select
+          label="Categorie"
+          value={values.category}
+          onChange={(value) => setField('category', value as VacancyCategory)}
+          options={categoryOptions}
+          placeholder="Kies een categorie"
+          error={fieldErrors.category}
+        />
+        <Select
+          label="Taal van de vacature"
+          value={values.language}
+          onChange={(value) => setField('language', value as Language)}
+          options={languageOptions}
+          error={fieldErrors.language}
+        />
+      </div>
       <div className={styles.grid}>
         <Select
           label="Land"
@@ -225,7 +228,7 @@ export function VacancyCoreForm({ vacancyId, initialValues, onSaved, onNext }: V
         />
       </div>
 
-      <div className={styles.footer}>
+      <CardFooter>
         <Button
           variant="text"
           type="button"
@@ -238,7 +241,7 @@ export function VacancyCoreForm({ vacancyId, initialValues, onSaved, onNext }: V
         <Button variant="primary" type="button" disabled={saving} onClick={() => save(true)}>
           Volgende
         </Button>
-      </div>
+      </CardFooter>
     </Card>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { descriptionApi, type VacancyDescriptionResponse } from '../../../entities/vacancy-description';
 import type { ApiError } from '../../../shared/api';
 import { toUserMessage } from '../../../shared/lib/problem-details';
-import { Button, Card, CardHeader, ErrorBanner, TextField } from '../../../shared/ui';
+import { Button, Card, CardFooter, CardHeader, ErrorBanner, TextField } from '../../../shared/ui';
 
 export interface VacancyDescriptionEditorProps {
   vacancyId: string;
@@ -95,9 +95,11 @@ export function VacancyDescriptionEditor({ vacancyId, draft, onSaved }: VacancyD
         maxLength={fieldMaxLengths.aboutUs}
         multiline
       />
-      <Button type="button" disabled={saving} onClick={save}>
-        Volgende
-      </Button>
+      <CardFooter>
+        <Button type="button" disabled={saving} onClick={save}>
+          Volgende
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

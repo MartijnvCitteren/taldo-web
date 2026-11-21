@@ -12,6 +12,10 @@ export interface StepperProps {
   isReachable?: (index: number) => boolean;
 }
 
+/**
+ * The steps of a flow on one page, as a segmented bar like the sign-up `ProgressRail`, but
+ * with the names visible and each reached step clickable.
+ */
 export function Stepper({ steps, currentIndex, onStepClick, isReachable }: StepperProps) {
   return (
     <ol className={styles.list}>
@@ -19,23 +23,19 @@ export function Stepper({ steps, currentIndex, onStepClick, isReachable }: Stepp
         const status = index === currentIndex ? 'active' : index < currentIndex ? 'done' : 'inactive';
         const reachable = isReachable ? isReachable(index) : true;
         return (
-          <li key={step.label} className={styles.itemWrapper}>
-            <div className={styles.item} data-status={status}>
-              <button
-                type="button"
-                className={styles.itemButton}
-                disabled={!reachable}
-                onClick={() => onStepClick?.(index)}
-              >
-                <span className={styles.circle}>
-                  {status === 'done' ? <Check size={14} aria-hidden="true" /> : index + 1}
-                </span>
-                <span className={styles.label}>{step.label}</span>
-              </button>
-            </div>
-            {index < steps.length - 1 && (
-              <span className={styles.connector} data-done={status === 'done'} aria-hidden="true" />
-            )}
+          <li key={step.label} className={styles.item} data-status={status}>
+            <button
+              type="button"
+              className={styles.itemButton}
+              disabled={!reachable}
+              aria-current={status === 'active' ? 'step' : undefined}
+              onClick={() => onStepClick?.(index)}
+            >
+              <span className={styles.marker}>
+                {status === 'done' ? <Check size={14} strokeWidth={3} aria-hidden="true" /> : index + 1}
+              </span>
+              <span className={styles.label}>{step.label}</span>
+            </button>
           </li>
         );
       })}
